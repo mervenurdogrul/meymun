@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .number {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: #3498db;
+            color: #fff;
+            text-align: center;
+            line-height: 50px;
+            border-radius: 50%;
+            font-family: Arial, sans-serif;
+            font-size: 20px;
+            cursor: pointer;
+            display: block;
+        }
+
+        .circle {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border: 2px solid #3498db;
+            border-radius: 50%;
+            pointer-events: auto; /* Dairenin tıklanabilir olmasını sağlar */
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <script>
+        let numbers = [];
+        let currentNumberIndex = 0;
+
+        function getRandomNumber() {
+            // 0 ile 9 arasındaki rastgele bir sayı alınır
+            return Math.floor(Math.random() * 10);
+        }
+
+        function createNumbers() {
+            let usedNumbers = [];
+
+            for (let i = 0; i < 10; i++) {
+                let number;
+
+                do {
+                    number = getRandomNumber();
+                } while (usedNumbers.includes(number));
+
+                usedNumbers.push(number);
+
+                let numberElement = document.createElement('div');
+                numberElement.className = 'number';
+                numberElement.style.left = `${Math.random() * 70}vw`; // Rastgele yatay pozisyon
+                numberElement.style.top = `${Math.random() * 70}vh`; // Rastgele dikey pozisyon
+                numberElement.innerHTML = number;
+                document.body.appendChild(numberElement);
+
+                let circleElement = document.createElement('div');
+                circleElement.className = 'circle';
+                circleElement.style.left = numberElement.style.left;
+                circleElement.style.top = numberElement.style.top;
+                document.body.appendChild(circleElement);
+
+                numbers.push({
+                    value: number,
+                    element: numberElement,
+                    circle: circleElement,
+                });
+            }
+        }
+
+        function startGame() {
+            createNumbers();
+            playGame();
+        }
+
+        function playGame() {
+            document.addEventListener('click', function (event) {
+                let clickedElement = null;
+
+                numbers.forEach((number, index) => {
+                    let rectNumber = number.element.getBoundingClientRect();
+                    let rectCircle = number.circle.getBoundingClientRect();
+
+                    if (
+                        (event.clientX >= rectNumber.left && event.clientX <= rectNumber.right &&
+                         event.clientY >= rectNumber.top && event.clientY <= rectNumber.bottom) ||
+                        (event.clientX >= rectCircle.left && event.clientX <= rectCircle.right &&
+                         event.clientY >= rectCircle.top && event.clientY <= rectCircle.bottom)
+                    ) {
+                        clickedElement = { index, value: number.value };
+                    }
+                });
+
+                if (clickedElement) {
+                    if (clickedElement.value === currentNumberIndex) {
+                        // Tıklanan sayı dahil tüm sayıları gizle
+                        numbers.forEach((number, index) => {
+                            if (index >= currentNumberIndex) {
+                                number.element.style.display = 'none';
+                                number.circle.style.display = 'block';
+                            }
+                        });
+
+                        currentNumberIndex++;
+
+                        if (currentNumberIndex === numbers.length) {
+                            alert('Tebrikler! Oyunu tamamladınız.');
+                            resetGame();
+                        }
+                    } else {
+                        alert('Yanlış tıklama! Oyun bitti.');
+                        resetGame();
+                    }
+                }
+            });
+        }
+
+        function resetGame() {
+            numbers.forEach((number) => {
+                document.body.removeChild(number.element);
+                document.body.removeChild(number.circle);
+            });
+            numbers = [];
+            currentNumberIndex = 0;
+            createNumbers();
+            playGame();
+        }
+
+        // Oyun otomatik olarak başlasın
+        startGame();
+    </script>
+</body>
+</html>
